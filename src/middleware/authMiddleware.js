@@ -17,6 +17,13 @@ export const protect = async (req, res, next) => {
 
     const user = await User.findById(decoded.id);
 
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
     req.user = user;
 
     next();
@@ -31,6 +38,12 @@ export const protect = async (req, res, next) => {
 // Role Authorization
 export const authorize = (...roles) => {
   return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized",
+      });
+    }
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
