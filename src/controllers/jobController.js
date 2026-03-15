@@ -1,6 +1,7 @@
 import JobOpening from "../models/JobOpening.js";
 import Company from "../models/Company.js";
 import Contact from "../models/Contact.js";
+import { expireJobs } from "../jobs/expireJobs.js";
 
 // Add Job
 export const createJob = async (req, res, next) => {
@@ -32,12 +33,14 @@ export const createJob = async (req, res, next) => {
 
 export const getAllJobs = async (req, res, next) => {
     try {
+        await expireJobs();
         const {
             page = 1,
             limit = 5,
             keyword,
             companyId,
-            status
+            status,
+            interviewDate,
         } = req.query;
 
         const queryObject = { isDeleted: false };
@@ -55,6 +58,10 @@ export const getAllJobs = async (req, res, next) => {
         // 📌 Filter by status (ACTIVE / EXPIRED / CLOSED)
         if (status) {
             queryObject.status = status;
+        }
+
+        if (interviewDate) {
+            queryObject.interviewDate = interviewDate// Only return jobs with interviewDate set
         }
 
         const skip = (page - 1) * limit;
@@ -82,6 +89,7 @@ export const getAllJobs = async (req, res, next) => {
 
 export const getJobById = async (req, res, next) => {
     try {
+        await expireJobs();
         const job = await JobOpening.findOne({
             _id: req.params.id,
             isDeleted: false,

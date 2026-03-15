@@ -61,6 +61,20 @@ const jobOpeningSchema = new mongoose.Schema(
       required: true,
     },
 
+    interviewDate: {
+      type: Date,
+      required: false,              // optional field
+      default: null,
+    },
+
+    remarks: {
+      type: String,
+      required: false,              // optional
+      trim: true,
+      default: "",
+      maxlength: [1500, "Remarks cannot exceed 1500 characters"],
+    },
+
     status: {
       type: String,
       enum: ["ACTIVE", "EXPIRED", "CLOSED"],

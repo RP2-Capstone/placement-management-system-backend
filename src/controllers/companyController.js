@@ -1,6 +1,7 @@
 import Company from "../models/Company.js";
 import ApiFeatures from "../utils/ApiFeatures.js";
 import Contact from "../models/Contact.js";
+import JobOpening from "../models/JobOpening.js";
 
 
 // Create Company
@@ -141,6 +142,35 @@ export const deleteCompany = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: "Company deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Dashboard Counts
+export const getDashboardCounts = async (req, res, next) => {
+  try {
+    const [
+      totalCompanies,
+      totalContacts,
+      activeJobs,
+      expiredJobs,
+    ] = await Promise.all([
+      Company.countDocuments({ isDeleted: false }),
+      Contact.countDocuments({ isDeleted: false }),
+      JobOpening.countDocuments({ isDeleted: false, status: "ACTIVE" }),
+      JobOpening.countDocuments({ isDeleted: false, status: "EXPIRED" }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalCompanies,
+        totalContacts,
+        activeJobs,
+        expiredJobs,
+      },
     });
   } catch (error) {
     next(error);

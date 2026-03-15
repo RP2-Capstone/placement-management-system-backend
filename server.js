@@ -1,8 +1,10 @@
-import 'dotenv/config';
+import "dotenv/config";
 import app from "./src/app.js";
 import connectDB from "./src/config/db.js";
+import startJobExpiryScheduler from "./src/jobs/expireJobs.js";
 
-connectDB();
+await connectDB();
+startJobExpiryScheduler();
 
 const PORT = process.env.PORT || 5000;
 

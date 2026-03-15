@@ -4,6 +4,7 @@ import {
   getAllCompanies,
   getAllCompanyName,
   getCompanyById,
+  getDashboardCounts,
   updateCompany,
   deleteCompany,
 } from "../controllers/companyController.js";
@@ -16,6 +17,7 @@ const router = express.Router();
 // View → Both ADMIN & COORDINATOR
 router.get("/", protect, authorize("ADMIN", "COORDINATOR"), getAllCompanies);
 router.get("/names", protect, authorize("ADMIN", "COORDINATOR"), getAllCompanyName);
+router.get("/dashboard-counts", protect, authorize("ADMIN", "COORDINATOR"), getDashboardCounts);
 router.get("/:id", protect, authorize("ADMIN", "COORDINATOR"), getCompanyById);
 
 // Modify → ADMIN only
