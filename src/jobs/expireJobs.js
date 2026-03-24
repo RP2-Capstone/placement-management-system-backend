@@ -1,6 +1,7 @@
 import JobOpening from "../models/JobOpening.js";
 
-const DEFAULT_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+// In every 6 hours
+const DEFAULT_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 export const expireJobs = async () => {
   try {

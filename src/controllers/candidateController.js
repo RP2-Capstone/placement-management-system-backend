@@ -1,4 +1,5 @@
 import Candidate from "../models/Candidate.js";
+import CandidateHistory from "../models/CandidateHistory.js";
 import Company from "../models/Company.js";
 import JobOpening from "../models/JobOpening.js";
 
@@ -63,6 +64,20 @@ export const createCandidates = async (req, res, next) => {
     }));
 
     const created = await Candidate.insertMany(docs, { ordered: true });
+
+    const historyDocs = created.map((candidate) => ({
+      candidateId: candidate._id,
+      candidateName: candidate.studentName,
+      jobOpeningId: candidate.jobOpeningId,
+      companyId: candidate.companyId,
+      interviewRounds: candidate.interviewRounds,
+      interviewDate: candidate.interviewDate,
+      status: candidate.status,
+    }));
+
+    if (historyDocs.length > 0) {
+      await CandidateHistory.insertMany(historyDocs, { ordered: true });
+    }
 
     res.status(201).json({
       success: true,
@@ -162,10 +177,58 @@ export const updateCandidate = async (req, res, next) => {
       });
     }
 
+    await CandidateHistory.create({
+      candidateId: candidate._id,
+      candidateName: candidate.studentName,
+      jobOpeningId: candidate.jobOpeningId,
+      companyId: candidate.companyId,
+      interviewRounds: candidate.interviewRounds,
+      interviewDate: candidate.interviewDate,
+      status: candidate.status,
+    });
+
     res.status(200).json({
       success: true,
       message: "Candidate updated successfully",
       data: candidate,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Candidate History
+export const getCandidateHistory = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const candidate = await Candidate.findOne({
+      _id: req.params.id,
+      isDeleted: false,
+    });
+
+    if (!candidate) {
+      return res.status(404).json({
+        success: false,
+        message: "Candidate not found",
+      });
+    }
+
+    const [history, total] = await Promise.all([
+      CandidateHistory.find({ candidateId: candidate._id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit)),
+      CandidateHistory.countDocuments({ candidateId: candidate._id }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / limit),
+      data: history,
     });
   } catch (error) {
     next(error);
